@@ -121,7 +121,7 @@ export default function Nft({ nft }) {
 
   useEffect(() => {
     getOwner();
-  }, [])
+  }, []);
 
   return (
     <>

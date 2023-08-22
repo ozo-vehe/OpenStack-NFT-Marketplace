@@ -1,4 +1,4 @@
-export const nftMarketplaceAddress = "0x04e2D88F782CD1107db6e01F564536F9866EBB5c";
+export const nftMarketplaceAddress = "0x070964606fF4ef31aA942d76e07C79e23Cba7EF3";
 
 export const nftMarketplaceAbi = [
   {
@@ -291,6 +291,19 @@ export const nftListingAbi = [
       }
     ],
     "name": "NewNft",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "buyer",
+        "type": "address"
+      }
+    ],
+    "name": "NftBought",
     "type": "event"
   },
   {

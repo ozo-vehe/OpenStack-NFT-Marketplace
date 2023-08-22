@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { readContract } from '@wagmi/core';
 import { useBalance, useAccount } from 'wagmi';
 import { nftMarketplaceAddress, nftMarketplaceAbi, nftListingAbi } from "../contract";
 import Nft from "./Nft";
+import SearchResult from './SearchResult';
 import LoadingAlert from './alerts/LoadingAlert';
 import ErrorAlert from './alerts/ErrorAlert';
 import { nftDetail } from '../utils/minter';
 
-export default function NftList() {
+export default function NftList({search}) {
+  console.log(search);
   const [nfts, setNfts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -69,31 +72,39 @@ export default function NftList() {
 
   return (
     <>
-      {error &&
-        <ErrorAlert
-          message={errorText}
-          setError={(error) => {
-            setError(error.error)
-            console.log(error)
-          }}
-        />
-      }
+      {search.address !== "" ? <SearchResult nfts={nfts} searchAddress={search} /> :
+      <>
+        {error &&
+          <ErrorAlert
+            message={errorText}
+            setError={(error) => {
+              setError(error.error)
+              console.log(error)
+            }}
+          />
+        }
       
-      <div className="flex flex-wrap gap-x-12 gap-y-8 items-center justify-center py-8">
-        {loading ? (
-          <LoadingAlert message="Loading Nfts..." />
-        ):(
-          <>
-            {nfts.length < 1 ? (
-              <p className="text-2xl">No Nfts currently available</p>
-            ):(
-              nfts.map((nft) => (
-                <Nft key={Number(nft.tokenId)} nft={nft} />
-              ))
-            )}
-          </>
-        )}
-      </div>  
+        <div className="flex flex-wrap gap-x-12 gap-y-8 items-center justify-center py-8">
+          {loading ? (
+            <LoadingAlert message="Loading Nfts..." />
+          ):(
+            <>
+              {nfts.length < 1 ? (
+                <p className="text-2xl">No Nfts currently available</p>
+              ):(
+                nfts.map((nft) => (
+                  <Nft key={Number(nft.tokenId)} nft={nft} />
+                ))
+              )}
+            </>
+          )}
+        </div>
+      </>
+      }
     </>
   )
 }
+
+NftList.propTypes = {
+  search: PropTypes.string.isRequired,
+};
