@@ -11,6 +11,10 @@ export default function AddNft() {
   const [visible, setVisible] = useState(false);
   // Loading state is used to display a loading indicator when the product is being created
   const [loading, setLoading] = useState(false);
+  // Set auction state
+  const [auction, setAuction] = useState(null);
+  // Set auction duration state
+  const [auctionDuration, setAuctionDuration] = useState(null);
   // The following states are used to store the values of the input fields
   const [productName, setProductName] = useState("");
   const [productPrice, setProductPrice] = useState(0);
@@ -35,6 +39,7 @@ export default function AddNft() {
   const addProduct = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log(auctionDuration);
 
     try {
       // Check if all the input fields are filled
@@ -42,14 +47,29 @@ export default function AddNft() {
       // Upload the product image to IPFS and get the metadata from IPFS 
       const metadata = await uploadToIPFS(productImage, productName, productDescription);
       
-      // Create the product by calling the writeProduct function on the marketplace contract
-      const tx = await writeContract({
-        address: nftMarketplaceAddress,
-        abi: nftMarketplaceAbi,
-        functionName: 'createNft',
-        args: [metadata, parseEther(productPrice)],
-        value: parseEther('0.01'),
-      })
+      // Define the transaction variable
+      let tx;
+      // Check if the product is an auction
+      if(auction === "true") {
+        tx = await writeContract({
+          address: nftMarketplaceAddress,
+          abi: nftMarketplaceAbi,
+          functionName: 'createAuctionNft',
+          args: [metadata, parseEther(productPrice), parseInt(auctionDuration * 60)],
+          value: parseEther('0.01'),
+        })
+      }
+      // If the product is not an auction
+      else {
+        // Create the product by calling the writeProduct function on the marketplace contract
+        tx = await writeContract({
+          address: nftMarketplaceAddress,
+          abi: nftMarketplaceAbi,
+          functionName: 'createNft',
+          args: [metadata, parseEther(productPrice)],
+          value: parseEther('0.01'),
+        })
+      }
 
       // Wait for the transaction to be mined
       await waitForTransaction(tx);
@@ -135,17 +155,56 @@ export default function AddNft() {
                       type="text"
                       className="w-full bg-gray-100 p-2 mt-2 mb-3"
                     />
-
-                    <label>Product Price (ETH)</label>
-                    <input
+                    <label>For Auction</label>
+                    <select
                       onChange={(e) => {
-                        setProductPrice(e.target.value);
+                        setAuction(e.target.value);
+                        console.log(auction)
                       }}
                       required
-                      type="number"
-                      step={0.001}
                       className="w-full bg-gray-100 p-2 mt-2 mb-3"
-                    />
+                    >
+                      <option value="false">No</option>
+                      <option value="true">Yes</option>
+                    </select>
+                    {auction === "true" ? (
+                      <>
+                        <label>Auction Price (ETH)</label>
+                        <input
+                          onChange={(e) => {
+                            setProductPrice(e.target.value);
+                          }}
+                          required
+                          type="number"
+                          step={0.001}
+                          className="w-full bg-gray-100 p-2 mt-2 mb-3"
+                        />
+
+                        <label>Auction Duration (minutes)</label>
+                        <input
+                          onChange={(e) => {
+                            setAuctionDuration(e.target.value);
+                          }}
+                          required
+                          type="number"
+                          step={1}
+                          className="w-full bg-gray-100 p-2 mt-2 mb-3"
+                        />
+                      </>
+                    ):(
+                      <>
+                        <label>Product Price (ETH)</label>
+                        <input
+                          onChange={(e) => {
+                            setProductPrice(e.target.value);
+                          }}
+                          required
+                          type="number"
+                          step={0.001}
+                          className="w-full bg-gray-100 p-2 mt-2 mb-3"
+                        />
+                      </>
+                    )}
                   </div>
                   {/* Button to close the modal */}
                   <div className="bg-gray-200 px-4 py-3 text-right">

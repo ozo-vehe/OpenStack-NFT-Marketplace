@@ -5,17 +5,15 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract NftListing is ERC721, IERC721Receiver, ERC721Enumerable, ERC721URIStorage, Ownable {
+contract NftListing is ERC721, IERC721Receiver, ERC721Enumerable, ERC721URIStorage {
     // Variable to hold the nft ID
-    uint256 nftId;
-    address seller;
-    uint256 price;
+    uint256 public nftId;
+    address public seller;
+    uint256 public price;
 
     // Contract events
     event NewNft(address newBuyer);
-    event WithdrawFunds();
     event NftBought(address buyer);
 
     // Custom only owner modifier
@@ -32,7 +30,7 @@ contract NftListing is ERC721, IERC721Receiver, ERC721Enumerable, ERC721URIStora
     }
 
     // Function mint an Nft
-    function safeMint(string memory _uri) public onlyOwner {
+    function safeMint(string memory _uri) public {
         _safeMint(seller, nftId);
         _setTokenURI(nftId, _uri);
 
@@ -40,30 +38,20 @@ contract NftListing is ERC721, IERC721Receiver, ERC721Enumerable, ERC721URIStora
         emit NewNft(seller);
     }
 
-    // Function to withdraw funds for this Nft
-    function withdraw() external nftOwner returns(bool) {
-        // Get the amount of Ether stored in this contract
-        uint256 amount = address(this).balance;
-        // Send the amount to the seller
-        (bool sent,) = seller.call{value: amount}("");
-        // Check if the amount was sent
-        require(sent, "Failed to withdraw amount");
-        // Emit WithdrawFunds event
-        emit WithdrawFunds();
-        // Return true
-        return true;
-    }
-
     // function to buy an Nft
-    function buy() public payable {
+    function buy() external payable {
         // Check if the buyer is not the seller
         require(msg.sender != seller, "Seller can't buy their Nft");
         // Check if the buyer has sent enough Ether
         require(msg.value >= price, "Invalid price passed");
+        // Send the money to the seller
+        payable(seller).transfer(msg.value);
         // Transfer ownership to the buyer
         _transfer(seller, msg.sender, nftId);
         // Change the value of seller to the address of the buyer
         seller = msg.sender;
+        // Emit NftBought event
+        emit NftBought(msg.sender);
     }
 
     // Function to receive Ether. msg.data must be empty

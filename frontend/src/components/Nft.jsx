@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { fetchBalance, getAccount, readContract, waitForTransaction, writeContract } from '@wagmi/core'
+import { useState } from 'react';
+import { fetchBalance, getAccount, waitForTransaction, writeContract } from '@wagmi/core'
 import PropTypes from 'prop-types';
 import { formatEther } from 'viem'
 import { buyNft } from '../utils/minter';
@@ -8,7 +8,9 @@ import LoadingAlert from './alerts/LoadingAlert';
 import ErrorAlert from './alerts/ErrorAlert';
 import SuccessAlert from './alerts/SuccessAlert';
 
-export default function Nft({ nft }) {
+export default function Nft({ nft, auction }) {
+  // Get the time left for the auction to end
+  const timeLeft = Math.round(((Number(nft.endsAt) * 1000) - Date.now()) / 1000 / 60);
   // Set the loading state to display a loading indicator when the product is being bought
   const [loading, setLoading] = useState(false);
   // Set loading text to display a loading indicator when the product is being bought
@@ -23,22 +25,7 @@ export default function Nft({ nft }) {
   const [successText, setSuccessText] = useState("");
   // Get the user's account from the context
   const { address } = getAccount();
-  // Set the nft owner
-  const [nftOwner, setNftOwner] = useState("");
 
-  // Get current nft ownerconst nftOwner = await readContract({
-  const getOwner = async() => {
-    const owner = await readContract({
-      address: nft.sellerNft,
-      abi: nftListingAbi,
-      functionName: 'ownerOf',
-      args: [nft.tokenId],
-      watch: true,
-    });
-    setNftOwner(owner);
-    console.log(owner)
-  }
-  
 
   // Get the user's account from the context
   const handleBuy = async (e) => {
@@ -68,9 +55,7 @@ export default function Nft({ nft }) {
     } finally {
       setLoading(false);
       setLoadingText("");
-      await getOwner();
     }
-    console.log(nftOwner);
   }
 
   // Function to withdraw funds from nft sales
@@ -119,10 +104,6 @@ export default function Nft({ nft }) {
     setLoadingText("");
   }
 
-  useEffect(() => {
-    getOwner();
-  }, []);
-
   return (
     <>
       {loading && <LoadingAlert message={loadingText} />}
@@ -140,6 +121,19 @@ export default function Nft({ nft }) {
       <div className="w-250 h-300 shadow-md border relative rounded-2xl overflow-hidden pt-2">
         <div className="image h-300">
           <img className="w-full h-full object-contain hover:scale-125 transition-all duration-300" src={nft.imageUrl} alt={nft.name} />
+          {auction && (
+            <>
+            {timeLeft >= 1 ? (
+              <span className="px-4 py-1 rounded-l-lg shadow-md absolute top-4 right-0 bg-blue-500 text-slate-50">
+                {Math.round(((Number(nft.endsAt) * 1000) - Date.now()) / 1000 / 60)} min left
+              </span>
+            ):(
+            <span className="px-4 py-1 rounded-l-lg shadow-md absolute top-4 right-0 bg-red-500 text-slate-50">
+              Ended
+            </span>
+            )}
+            </>
+          )}
         </div>
 
         <div className="group content absolute bottom-0 left-0 w-full py-2 bg-white">
@@ -153,7 +147,7 @@ export default function Nft({ nft }) {
             )}
           </div>
           <div className="btn absolute -bottom-12 group-hover:bottom-0 left-0 w-full transition-all duration-300">
-            {nftOwner !== address ? (
+            {nft.seller !== address ? (
               <button
                 className="bg-blue-600 cursor-pointer capitalize text-white w-full py-2"
                 disabled={loading}
@@ -182,4 +176,5 @@ export default function Nft({ nft }) {
 // }
 Nft.propTypes = {
   nft: PropTypes.object.isRequired,
+  auction: PropTypes.bool.isRequired,
 };

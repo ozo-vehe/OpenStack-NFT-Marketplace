@@ -1,32 +1,40 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./NftListing.sol";
+import "./NftAuction.sol";
 
 contract NftMarketplace is Ownable {
     // Counter for all NFTs in the marketplace
     uint256 public NftIdCounter = 0;
+    // Counter for all NFTs in the marketplace
+    uint256 public AuctionIdCounter = 0;
 
     // Variable to hold the listing fee
     uint256 listingFee = 0.01 ether;
 
     // Struct to hold all created nfts
     struct Nft {
-        address seller;
-        uint256 tokenId;
-        uint256 price;
         NftListing sellerNft;
+    }
+    
+    // Struct to hold all the auction Nft
+    struct AuctionNft {
+        NftAuction auctionNft;
     }
 
     // Mapping to hold all the NFTs created
     mapping(uint256 => Nft) public NftListings;
+    
+    // Mapping to hold all the NFTs created
+    mapping(uint256 => AuctionNft) public NftAuctions;
 
     // Function to create NFTs
-    function createNft(string memory _uri, uint256 _price) payable public {
+    function createNft(string memory _uri, uint256 _price) payable external {
         // Check if the price is greater than the listingFee
         require(msg.value >= listingFee, "Invalid minting price");
+        
         // Create a new NFT
         NftListing newNft = new NftListing(NftIdCounter, msg.sender, _price);
         // Mint the NFT
@@ -34,25 +42,32 @@ contract NftMarketplace is Ownable {
 
         // Add the NFT to the NftListings mapping
         NftListings[NftIdCounter] = Nft(
-            payable(msg.sender),
-            NftIdCounter,
-            _price,
             newNft
         );
         // Increment the NftIdCounter
         NftIdCounter++;
     }
 
-    // Function to read NFTs
-    function readNft(uint256 _id) public view returns(Nft memory) {
-        // Check if the NFT exists
-        require(_id < NftIdCounter, "Invalid NFT ID passed");
-        // Return the NFT
-        return NftListings[_id];
+    // Function to create auction Nfts
+    function createAuctionNft(string memory _uri, uint256 _price, uint256 _duration) payable external {
+        // Check if the price is greater than the listingFee
+        require(msg.value >= listingFee, "Invalid minting price");
+        
+        // Create a new NFT
+        NftAuction newAuction = new NftAuction(msg.sender, AuctionIdCounter, _duration, _price);
+        // Mint the NFT
+        newAuction.mintAuction(_uri);
+
+        // Add the NFT to the NftListings mapping
+        NftAuctions[AuctionIdCounter] = AuctionNft(
+            newAuction
+        );
+        // Increment the NftIdCounter
+        AuctionIdCounter++;
     }
 
     // Function to withdraw listingFee funds
-    function withdraw() onlyOwner public {
+    function withdraw() onlyOwner external {
         // Get the owner address
         address _owner = owner();
         // Get the amount to be withdrawn
