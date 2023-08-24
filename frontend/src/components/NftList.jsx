@@ -14,6 +14,7 @@ export default function NftList({search}) {
   const [nfts, setNfts] = useState([]);
   const [auctionNft, setAuctionNft] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingAuction, setLoadingAuction] = useState(false);
   const [error, setError] = useState(false);
   const [errorText, setErrorText] = useState('');
   // const [balance, setBalance] = useState(0);
@@ -29,8 +30,6 @@ export default function NftList({search}) {
   const getNfts = async() => {
     // Array to store the products
     const nftArray = [];
-    // Array to store the auction products
-    const auctionNftArray = [];
     // Set the loading state to display a loading indicator when the products are being fetched
     setLoading(true);
     try {
@@ -53,16 +52,10 @@ export default function NftList({search}) {
         // Get the product details
         const nftData = await nftDetail(i, nftListingAbi, data);
         // Add the product to the products array
-        if(nftData.auction === true) {
-          auctionNftArray.push(nftData);
-        } else {
-          nftArray.push(nftData);
-        }
+        nftArray.push(nftData);
       }
       // Set the products array in the local state
       setNfts(nftArray);
-      // Set the auction products array in the local state
-      setAuctionNft(auctionNftArray);
     } catch (error) {
       setTimeout(() => {
         setError(true);
@@ -79,7 +72,7 @@ export default function NftList({search}) {
     // Array to store the auction products
     const auctionNftArray = [];
     // Set the loading state to display a loading indicator when the products are being fetched
-    setLoading(true);
+    setLoadingAuction(true);
     try {
       // Get the number of products in the marketplace
       const nftLength = await readContract({
@@ -112,7 +105,7 @@ export default function NftList({search}) {
       console.log(error);
     } finally {
       // Set the loading state to false when the products have been fetched
-      setLoading(false);
+      setLoadingAuction(false);
     }
   }
 
@@ -126,7 +119,7 @@ export default function NftList({search}) {
   return (
     <>
       {search.address !== "" && search.address !== undefined ? (
-        <SearchResult nfts={nfts} searchAddress={search} />
+        <SearchResult nfts={[...nfts, ...auctionNft]} searchAddress={search} />
       ):(
       <>
         {error &&
@@ -157,7 +150,7 @@ export default function NftList({search}) {
 
         <div className="flex flex-wrap gap-x-12 gap-y-8 items-center justify-center py-8">
           <h2 className="w-full text-3xl px-12 text-center font-bold">Auction</h2>
-          {loading ? (
+          {loadingAuction ? (
             <LoadingAlert message="Loading available auction Nfts..." />
           ):(
             <>

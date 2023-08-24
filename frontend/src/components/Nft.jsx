@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { fetchBalance, getAccount, waitForTransaction, writeContract } from '@wagmi/core'
 import PropTypes from 'prop-types';
-import { formatEther } from 'viem'
+import { formatEther } from 'viem';
 import { buyNft } from '../utils/minter';
-import { nftListingAbi } from '../contract';
+import { nftListingAbi, nftAuctionAbi } from '../contract';
 import LoadingAlert from './alerts/LoadingAlert';
 import ErrorAlert from './alerts/ErrorAlert';
 import SuccessAlert from './alerts/SuccessAlert';
+import BidModal from './BidModal';
 
 export default function Nft({ nft, auction }) {
   // Get the time left for the auction to end
@@ -38,8 +39,6 @@ export default function Nft({ nft, auction }) {
       const { value: balance } = await fetchBalance({
         address,
       })
-      console.log(balance);
-      console.log(balance > nft.price);
 
       // Check if the user's balance is greater than the product price
       if(balance > nft.price) {
@@ -70,15 +69,15 @@ export default function Nft({ nft, auction }) {
     try {
       // Get the contract balance
       const { formatted: contractBalance } = await fetchBalance({
-        address: nft.sellerNft,
+        address: nft.data,
       })
 
       // Check if the contract balance is greater than 0
       if(contractBalance <= 0) throw new Error("No funds to withdraw");
       // Withdraw funds from nft sales by calling the withdraw function on the marketplace contract
       const tx = await writeContract({
-        address: nft.sellerNft,
-        abi: nftListingAbi,
+        address: nft.data,
+        abi: nftAuctionAbi,
         functionName: 'withdraw',
       });
       // Wait for the transaction to be confirmed
@@ -146,23 +145,33 @@ export default function Nft({ nft, auction }) {
               <span>{nft.description}</span>
             )}
           </div>
-          <div className="btn absolute -bottom-12 group-hover:bottom-0 left-0 w-full transition-all duration-300">
-            {nft.seller !== address ? (
-              <button
-                className="bg-blue-600 cursor-pointer capitalize text-white w-full py-2"
-                disabled={loading}
-                onClick={handleBuy}
-              >
-                {loading ? loadingText: "buy now"}
-              </button>
+          <div className="btn absolute -bottom-12 group-hover:bottom-0 left-0 w-full transition-all duration-300">            
+            {auction ? (
+              <>
+                {nft.seller !== address ? (
+                  <BidModal nft={nft} />
+                ):(
+                  <button
+                    className="bg-blue-600 cursor-pointer capitalize text-white w-full py-2"
+                    disabled={loading}
+                    onClick={handleWithdraw}
+                  >
+                    withdraw funds
+                  </button>
+                )}                
+              </>
             ):(
-              <button
-                className="bg-blue-600 cursor-pointer capitalize text-white w-full py-2"
-                disabled={loading}
-                onClick={handleWithdraw}
-              >
-                withdraw
-              </button>
+              <>
+                {nft.seller !== address && (
+                  <button
+                    className="bg-blue-600 cursor-pointer capitalize text-white w-full py-2"
+                    disabled={loading}
+                    onClick={handleBuy}
+                  >
+                    {loading ? loadingText: "buy now"}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -177,4 +186,4 @@ export default function Nft({ nft, auction }) {
 Nft.propTypes = {
   nft: PropTypes.object.isRequired,
   auction: PropTypes.bool.isRequired,
-};
+}
