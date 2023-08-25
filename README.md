@@ -10,6 +10,8 @@ Live link: [OpenStack Nft Marketplace](https://open-stack-nft-marketplace.vercel
 6.  [Conclusion](#conclusion)
 
 ## Introduction
+![](https://github.com/ozo-vehe/OpenStack-NFT-Marketplace/blob/main/bg-image.png)
+
 Welcome to OpenStack Nft Marketplace, a decentralized marketplace for buying, selling, and auctioning Nfts (Non-Fungible Tokens). With an intuitive user interface and cutting-edge features, OpenStack Nft Marketplace empowers users to explore, trade, and showcase their digital assets seamlessly. Our platform is a cutting-edge marketplace that revolutionizes the world of digital art and collectibles. Whether you're an artist looking to showcase your creations, a collector searching for unique digital assets, or an enthusiast excited about the NFT revolution, our marketplace provides a seamless and secure environment for trading NFTs.
 
 ## Technology Stack
