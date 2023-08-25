@@ -87,6 +87,7 @@ export default function AddNft() {
       setLoading(false);
       clearForm();
       setVisible(false);
+      setAuction(null);
     }
   };
 

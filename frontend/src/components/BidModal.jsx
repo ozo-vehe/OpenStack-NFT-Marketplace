@@ -7,6 +7,7 @@ import LoadingAlert from './alerts/LoadingAlert';
 import ErrorAlert from './alerts/ErrorAlert';
 
 export default function BidModal({nft}) {
+  console.log(nft);
   // Set the loading state to display a loading indicator when the product is being bought
   const [loading, setLoading] = useState(false);
   // Set loading text to display a loading indicator when the product is being bought
@@ -23,11 +24,6 @@ export default function BidModal({nft}) {
   // Function to place a bid on an auction
   const handleBid = async (e) => {
     e.preventDefault();
-    console.log(nft);
-    console.log(parseEther(bid) > nft.currentBid);
-    console.log(parseEther(bid) > nft.price);
-    console.log(parseEther(bid));
-    console.log(bid);
     // Set the loading state to display a loading indicator when the product is being bought
     setLoading(true);
     // Set loading text to display a loading indicator when the product is being bought
@@ -35,8 +31,8 @@ export default function BidModal({nft}) {
     
     try {
       // Check if valid bid is placed
-      if(bid <= 0 || bid <= nft.currentBid || bid <= nft.price) {
-        return new Error("Invalid bid placed");
+      if(bid <= 0 || parseEther(bid) <= nft.currentBid || parseEther(bid) <= nft.price) {
+        throw new Error("Invalid bid placed");
       }
       const tx = await writeContract({
         address: nft.data,
@@ -68,7 +64,7 @@ export default function BidModal({nft}) {
         disabled={loading}
         onClick={() => setShow(true)}
       >
-        {loading ? loadingText: "Place bid"}
+        Place bid
       </button>
       {show &&
       <div className="border flex items-center justify-center w-full h-screen fixed top-0 left-0 bg-black/30 z-10" id="bidModal">

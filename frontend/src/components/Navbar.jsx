@@ -25,6 +25,7 @@ export default function Navbar({setAddress}) {
         <div className="overflow-hidden border border-slate-400 flex gap-4 items-center justify-between w-350 h-10 rounded-md">
           <input
             type="text"
+            placeholder="Search Wallet Address"
             className="pl-2 h-full w-full outline-none"
             onChange={(e) => {
               setSearchAddress({address: e.target.value})

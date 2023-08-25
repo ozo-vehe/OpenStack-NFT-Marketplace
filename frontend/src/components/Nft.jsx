@@ -168,7 +168,7 @@ export default function Nft({ nft, auction }) {
                     disabled={loading}
                     onClick={handleBuy}
                   >
-                    {loading ? loadingText: "buy now"}
+                    buy now
                   </button>
                 )}
               </>
