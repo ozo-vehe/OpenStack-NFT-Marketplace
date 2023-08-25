@@ -17,6 +17,9 @@ export default {
         '550': '550px',
         '600': '600px',
         '650': '650px',
+      },
+      backgroundImage: {
+        'bgCover': "url('./src/assets/bg.png')",
       }
     },
   },
