@@ -124,7 +124,7 @@ export default function Nft({ nft, auction }) {
             <>
             {timeLeft >= 1 ? (
               <span className="px-4 py-1 rounded-l-lg shadow-md absolute top-4 right-0 bg-blue-500 text-slate-50">
-                {Math.round(((Number(nft.endsAt) * 1000) - Date.now()) / 1000 / 60)} min left
+                { timeLeft } mins left
               </span>
             ):(
             <span className="px-4 py-1 rounded-l-lg shadow-md absolute top-4 right-0 bg-red-500 text-slate-50">
@@ -152,8 +152,8 @@ export default function Nft({ nft, auction }) {
                   <BidModal nft={nft} />
                 ):(
                   <button
-                    className="bg-blue-600 cursor-pointer capitalize text-white w-full py-2"
-                    disabled={loading}
+                    className={`capitalize text-white w-full py-2 ${timeLeft > 0 ? 'bg-blue-400' : 'bg-blue-600'}`}
+                    disabled={timeLeft > 0}
                     onClick={handleWithdraw}
                   >
                     withdraw funds
